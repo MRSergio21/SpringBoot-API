@@ -23,10 +23,11 @@ public class PageEntity {
     private LocalDateTime dateCreation;
 
     @OneToOne
-    @JoinColumn(name = "id_User", unique = true )
+    @JoinColumn(name = "id_User", unique = true) //FK
     private UserEntity user;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "id_Page") //FK
     private List<PostEntity> posts = new ArrayList<>();
 
     public void addPost(PostEntity post) {
