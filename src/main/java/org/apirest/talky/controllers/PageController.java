@@ -16,7 +16,7 @@ public class PageController {
 
     @GetMapping
     public ResponseEntity<PageResponse> getPage(){
-        return null;
+        return ResponseEntity.ok(this.pageService.readPageByTitle("User2 Page"));
     }
 
     @PostConstruct

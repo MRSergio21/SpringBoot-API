@@ -49,7 +49,7 @@ public class PageServiceImpl implements PageService {
     }
 
     @Override
-    public PageResponse readPageByTittle(String tittle) {
+    public PageResponse readPageByTitle(String tittle) {
 
         var entityResult = this.pageRepository.findByTitle(tittle).orElseThrow(() -> new RuntimeException("Page not found"));
 

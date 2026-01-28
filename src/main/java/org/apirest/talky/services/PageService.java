@@ -9,7 +9,7 @@ import org.apirest.talky.dto.PostResponse;
 public interface PageService {
 
     PageResponse createPage (PageRequest pageCreate);
-    PageResponse readPageByTittle (String tittle);
+    PageResponse readPageByTitle (String title);
     PageResponse updatePage (PageRequest pageUpdate, String tittle);
     void deletePage (String tittle);
 
