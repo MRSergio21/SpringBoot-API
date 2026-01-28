@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "AppUser") // Specify table name if different from class name
+@Table(name = "App_User") // Specify table name if different from class name
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -17,7 +17,7 @@ public class UserEntity {
 
     private String name;
     private Integer age;
-    private String email;
+    private String mail;
     private String password;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
