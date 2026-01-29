@@ -14,6 +14,4 @@ public class PageRequest {
 
     private String title;
     private Long userId;
-
-
 }

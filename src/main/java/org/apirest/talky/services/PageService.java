@@ -10,10 +10,10 @@ public interface PageService {
 
     PageResponse createPage (PageRequest pageCreate);
     PageResponse readPageByTitle (String title);
-    PageResponse updatePage (PageRequest pageUpdate, String tittle);
+    PageResponse updatePage (String title, PageRequest pageUpdate);
     void deletePage (String tittle);
 
-    PageResponse createPost (PostRequest postCreate);
-    PageResponse deletePost (Long idPost);
+    PageResponse createPost (PostRequest postCreate, String title);
+    void deletePost (Long idPost, String title);
 
 }

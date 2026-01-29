@@ -7,6 +7,8 @@ import org.apirest.talky.dto.PageResponse;
 import org.apirest.talky.dto.PostRequest;
 import org.apirest.talky.dto.PostResponse;
 import org.apirest.talky.entities.PageEntity;
+import org.apirest.talky.entities.PostEntity;
+import org.apirest.talky.exception.TitleNotValidException;
 import org.apirest.talky.repositories.PageRepository;
 import org.apirest.talky.repositories.UserRepository;
 import org.springframework.beans.BeanUtils;
@@ -30,11 +32,13 @@ public class PageServiceImpl implements PageService {
 
     @Override
     public PageResponse createPage(PageRequest pageCreate) {
+
+        this.validateTitle(pageCreate.getTitle());
         final var pageEntity = new PageEntity();
         BeanUtils.copyProperties(pageCreate, pageEntity);
 
         final var userEntity = this.userRepository.findById(pageCreate.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         pageEntity.setDateCreation(LocalDateTime.now());
         pageEntity.setUser(userEntity);
@@ -51,7 +55,7 @@ public class PageServiceImpl implements PageService {
     @Override
     public PageResponse readPageByTitle(String tittle) {
 
-        var entityResult = this.pageRepository.findByTitle(tittle).orElseThrow(() -> new RuntimeException("Page not found"));
+        var entityResult = this.pageRepository.findByTitle(tittle).orElseThrow(() -> new IllegalArgumentException("Page not found"));
 
         final var response = new PageResponse();
         BeanUtils.copyProperties(entityResult, response);
@@ -69,9 +73,10 @@ public class PageServiceImpl implements PageService {
     }
 
     @Override
-    public PageResponse updatePage(PageRequest pageUpdate, String tittle) {
-        var entityFromDB = this.pageRepository.findByTitle(tittle).orElseThrow(() -> new RuntimeException("Page not found"));
+    public PageResponse updatePage(String title, PageRequest pageUpdate) {
 
+        this.validateTitle(pageUpdate.getTitle());
+        var entityFromDB = this.pageRepository.findByTitle(title).orElseThrow(() -> new IllegalArgumentException("Page not found"));
         entityFromDB.setTitle(pageUpdate.getTitle());
 
         var pageUpdated = this.pageRepository.save(entityFromDB);
@@ -98,12 +103,58 @@ public class PageServiceImpl implements PageService {
     }
 
     @Override
-    public PageResponse createPost(PostRequest postCreate) {
-        return null;
+    public PageResponse createPost(PostRequest postCreate, String title) {
+
+        var pageToCreate = this.pageRepository.findByTitle(title).orElseThrow(() -> new IllegalArgumentException("Page not found"));
+
+        final var postEntity = new PostEntity();//Create new PostEntity to insert
+        BeanUtils.copyProperties(postCreate, postEntity); //Copy properties from PostRequest to PostEntity
+        postEntity.setDateCreation(LocalDateTime.now()); //Set creation date
+
+        pageToCreate.addPost(postEntity);
+
+        final var responseEntity = this.pageRepository.save(pageToCreate); //Save the updated PageEntity with the new PostEntity
+        final var response = new PageResponse(); //Create response
+        BeanUtils.copyProperties(responseEntity, response); //Copy properties from saved PageEntity to response
+
+        final List<PostResponse> postResponse = responseEntity.getPosts().stream().map(postE ->
+                PostResponse.builder() //Map each PostEntity to PostResponse
+                        .img(postE.getImg())
+                        .content(postE.getContent())
+                        .dateCreation(postE.getDateCreation())
+                        .build()
+        ).toList();
+
+        response.setPostResponseList(postResponse);
+        return response;
     }
 
     @Override
-    public PageResponse deletePost(Long idPost) {
-        return null;
+    public void deletePost(Long idPost, String title) {
+        var pageToUpdate = this.pageRepository.findByTitle(title).orElseThrow(() -> new IllegalArgumentException("Page not found"));
+
+        var postToDelete = pageToUpdate.getPosts().stream()
+                .filter(post -> post.getId().equals(idPost))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        pageToUpdate.removePost(postToDelete);
+
+    }
+
+    private void validateTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new TitleNotValidException("Title cannot be null or empty");
+        }
+        if (title.length() < 3 || title.length() > 100) {
+            throw new TitleNotValidException("Title must be between 3 and 100 characters");
+        }
+        if (!title.matches("^[a-zA-Z0-9\\-\\_]+$")) {
+            throw new TitleNotValidException("Title contains invalid characters");
+        }
+        if (title.contains("5678") || title.contains("1234")) {
+            throw new TitleNotValidException("Title contains prohibited sequences");
+
+        }
     }
 }
