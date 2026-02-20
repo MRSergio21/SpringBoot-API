@@ -1,0 +1,36 @@
+@startuml Domain Model
+
+title Domain Model - The Liga
+
+class Team {
+    + id_team: Integer
+    + name: String
+    + email: String {unique}
+    + city: String
+    + since: Date
+}
+
+class Player {
+    + id_player: Integer
+    + name: String
+    + lastname: String
+    + email: String {unique}
+    + birth_date: Date
+    + position: String
+    + gender: String
+    + weight: Double
+    + height: Double
+    + imc: Float
+    + fat: Float
+}
+
+class Signing {
+    + id_signing: Integer
+    + since: Date
+    + until: Date
+}
+
+Team "1" *-- "0..*" Signing : hires
+Player "1" *-- "0..*" Signing : signs
+
+@enduml
